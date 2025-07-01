@@ -1,20 +1,20 @@
 {
     "version": 2,
-    "rewrites": [
-      {
-        "source": "/api/(.*)",
-        "destination": "/api"
-      }
-    ],
      "builds": [
-      {
-        "src": "app.js",
-        "dest": "app.js",
-        "env": {
-            "MONGO_URI": "@mongo_uri"
-        },
-        "output": "standalone",
-        "use": "@vercel/node"
-      }
+        {
+            "src": "app.js",
+            "dest": "app.js",
+            "env": {
+                "MONGO_URI": "@mongo_uri"
+            },
+            "output": "standalone",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/app.js"
+        }
     ]
   }

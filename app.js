@@ -20,6 +20,15 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "views")));
 app.use(cookieParser());
+app.use(cors(
+    {
+        origin: ["http://localhost:3000","https://user-app-nine-beta.vercel.app/", "https://user-module-frontend.vercel.app"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+    }
+));
+
 
 const User = require("./models/user");
 
