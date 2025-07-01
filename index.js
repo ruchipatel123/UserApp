@@ -24,9 +24,15 @@ app.use(express.static(path.join(__dirname, "views")));
 app.use(cookieParser());
 app.use(cors(
     {
-        origin: ["http://localhost:3000","https://user-app-nine-beta.vercel.app/"],
-        methods: ["POST", "GET"],
-        credentials: true
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://user-app-nine-beta.vercel.app",
+            /\.vercel\.app$/
+        ],
+        methods: ["POST", "GET", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
     }
 ));
 
@@ -52,11 +58,17 @@ mongoose.connect(uri, {
 })
 .then(() => {
     console.log("Connected to MongoDB successfully");
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
 })
 .catch((error) => {
     console.error("MongoDB connection error:", error);
-    process.exit(1);
 });
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+// Export the app for Vercel
+module.exports = app;
