@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect("mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 
 
 
