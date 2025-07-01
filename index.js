@@ -1,13 +1,25 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
 
-mongoose.connect("mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+//mongoose.connect("mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 
 
 
