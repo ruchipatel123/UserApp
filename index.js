@@ -6,15 +6,9 @@ const app = express();
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://ruchip:ruchip@cluster0.ovwrjkz.mongodb.net";
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-  },
-});
+
+// MongoDB connection string - use environment variable or fallback
+const uri = process.env.MONGODB_URI || "mongodb+srv://ruchip:ruchip@cluster0.ovwrjkz.mongodb.net/userapp?retryWrites=true&w=majority";
 
 
 
@@ -51,8 +45,18 @@ app.use("/", userRouter);
 const userLoginRouter = require("./Router/userLogin");
 app.use("/", userLoginRouter);
 
-app.listen(PORT, async () => {
-    console.log(`Server is running on port ${PORT}`);
-    await client.connect();
-    console.log("Connected to MongoDB");
+// Connect to MongoDB using Mongoose
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => {
+    console.log("Connected to MongoDB successfully");
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+})
+.catch((error) => {
+    console.error("MongoDB connection error:", error);
+    process.exit(1);
 });

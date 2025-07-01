@@ -58,10 +58,8 @@ router.post("/register",  (req, res) => {
             return res.status(500).json({ message: "Error hashing password" });
         }
         const { name, email, password } = req.body;
-            const existingUser = await AppUser.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({ message: "User already exists" });
-            }
+            //const existingUser = await AppUser.findOne({ email });
+
             const user = await AppUser.create({ name, email, password: hash });
             const token = jwt.sign({ id: user._id }, 'Ruchi@123');
             res.cookie("token", token);

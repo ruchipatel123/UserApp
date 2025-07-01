@@ -35,10 +35,13 @@ A full-stack web application built with Node.js, Express, MongoDB, and EJS templ
 
 3. Create a `.env` file in the root directory and add your environment variables:
    ```
+   PORT=3001
+   MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/userapp?retryWrites=true&w=majority
    JWT_SECRET=your_jwt_secret_here
-   MONGODB_URI=your_mongodb_connection_string
-   PORT=3000
+   NODE_ENV=development
    ```
+   
+   **Important**: Replace the MongoDB URI with your actual credentials and cluster details.
 
 4. Start the application:
    ```bash
