@@ -9,7 +9,7 @@ const isAuthenticated = (req, res, next) => {
     }
     
     try {
-        const decoded = jwt.verify(token, 'Ruchi@123');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'Ruchi@123');
         req.user = decoded;
         next();
     } catch (error) {
@@ -25,7 +25,7 @@ const redirectIfAuthenticated = (req, res, next) => {
     
     if (token) {
         try {
-            jwt.verify(token, 'Ruchi@123');
+            jwt.verify(token, process.env.JWT_SECRET || 'Ruchi@123');
             return res.redirect("/");
         } catch (error) {
             // Invalid token, clear it and continue

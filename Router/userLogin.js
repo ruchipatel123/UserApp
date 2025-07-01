@@ -11,16 +11,20 @@ router.get("/login", redirectIfAuthenticated, (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-    
-    const { email, password } = req.body;
-    const user = await AppUser.findOne({ email });
-  
-    if(!user){
-        return res.status(401).json({ message: "Invalid credentials" });
-    }
-    
-    
-    bcrypt.compare(password, user.password, (err, result) => {
+    try {
+        const { email, password } = req.body;
+        
+        if(!email || !password){
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+        
+        const user = await AppUser.findOne({ email });
+      
+        if(!user){
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+        
+        const result = await bcrypt.compare(password, user.password);
         if(result){
             console.log("User logged in successfully:", {
                 id: user._id,
@@ -28,15 +32,17 @@ router.post("/login", async (req, res) => {
                 email: user.email,
                 loginTime: new Date().toISOString()
             });
-            const token = jwt.sign({ id: user._id }, 'Ruchi@123');
+            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'Ruchi@123');
             res.cookie("token", token);
             res.cookie("email", user.email);
             res.redirect("/");
-        }
-        else{
+        } else {
             return res.status(401).json({ message: "Invalid credentials" });
         }
-    });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Internal server error during login" });
+    }
 });
 
 router.get("/logout", (req, res) => {
@@ -49,22 +55,29 @@ router.get("/register", redirectIfAuthenticated, (req, res) => {
 });
 
 
-router.post("/register",  (req, res) => {
-    if(!req.body.name || !req.body.email || !req.body.password){
-        return res.status(400).json({ message: "All fields are required" });
-    }
-    bcrypt.hash(req.body.password, 10, async (err, hash) => {
-        if(err){
-            return res.status(500).json({ message: "Error hashing password" });
+router.post("/register", async (req, res) => {
+    try {
+        if(!req.body.name || !req.body.email || !req.body.password){
+            return res.status(400).json({ message: "All fields are required" });
         }
-        const { name, email, password } = req.body;
-            //const existingUser = await AppUser.findOne({ email });
 
-            const user = await AppUser.create({ name, email, password: hash });
-            const token = jwt.sign({ id: user._id }, 'Ruchi@123');
-            res.cookie("token", token);
-            res.redirect("/login");
-    });
+        const { name, email, password } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await AppUser.findOne({ email });
+        if(existingUser){
+            return res.status(400).json({ message: "User already exists with this email" });
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+        const user = await AppUser.create({ name, email, password: hash });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'Ruchi@123');
+        res.cookie("token", token);
+        res.redirect("/login");
+    } catch (error) {
+        console.error("Registration error:", error);
+        res.status(500).json({ message: "Internal server error during registration" });
+    }
 });
 
 
