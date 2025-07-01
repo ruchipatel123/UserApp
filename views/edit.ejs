@@ -38,11 +38,19 @@
 
                     <!-- Input field for 'Class' -->
                     <div class="my-2">
-                        <label for="class" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Image</label>
+                        <label for="class" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Current Image</label>
                         
-                        <img src="<%= user.image %>" alt="Image" class="w-10 h-10">
-                        <input type="file" value="<%= user.image %>" name="image" placeholder="<%= user.image %>" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="class">
-                        <!-- <input type="text" value="<%= user.image %>" name="image" placeholder="Image" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="class"> -->
+                        <div class="my-2">
+                            <img src="<%= user.image %>" alt="<%= user.name %>'s current image" 
+                                 class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                                 onerror="this.src='/uploads/default-avatar.png'; this.onerror=null;">
+                        </div>
+                        
+                        <label for="new-image" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Upload New Image (Optional)</label>
+                        <input type="file" name="image" accept="image/*" 
+                               class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                               id="new-image">
+                        <small class="text-gray-500">Leave empty to keep current image</small>
                     </div>
 
                     <!-- Save button -->

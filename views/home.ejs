@@ -16,7 +16,9 @@
         <% users.forEach(user => { %>
             <div class="bg-white rounded-lg shadow-md overflow-hidden max-w-sm w-full5">
                 <div class="relative">
-                    <img src="<%= user.image %>" alt="User image" class="w-full h-64 object-cover">
+                    <img src="<%= user.image %>" alt="<%= user.name %>'s profile image" 
+                         class="w-full h-64 object-cover"
+                         onerror="this.src='/uploads/default-avatar.png'; this.onerror=null;">
                 </div>
                 <div class="p-4">
                     <h2 class="text-xl font-semibold text-gray-800 mb-1"><%= user.name %></h2>

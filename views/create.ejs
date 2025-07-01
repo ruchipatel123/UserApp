@@ -34,11 +34,13 @@
                         <input type="email" name="email" placeholder="Email" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="first_name">
                     </div>
 
-                    <!-- Input field for 'Class' -->
+                    <!-- Input field for 'Image' -->
                     <div class="my-2">
-                        <label for="class" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Image</label>
-                        <input type="file" name="image" placeholder="Image" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="class">
-                    <!-- <input type="text" name="image" placeholder="Image" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="class"> -->
+                        <label for="image" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Profile Image (Optional)</label>
+                        <input type="file" name="image" accept="image/*" 
+                               class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                               id="image">
+                        <small class="text-gray-500">Leave empty for default avatar</small>
                     </div>
 
                     <!-- Save button -->

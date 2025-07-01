@@ -13,10 +13,26 @@ const upload = multer({
     storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Check if file is an image
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'), false);
+        }
     }
 });
 
-router.post("/create", isAuthenticated, upload.single("image"), async (req, res) => {
+router.post("/create", isAuthenticated, (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+        if (err) {
+            console.error("File upload error:", err.message);
+            return res.status(400).json({ message: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         console.log(req.cookies.email);
 
@@ -29,12 +45,15 @@ router.post("/create", isAuthenticated, upload.single("image"), async (req, res)
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // Handle image upload - make it optional for Vercel compatibility
+        // Handle image upload - use default avatar if no image uploaded
         let imagePath = '/uploads/default-avatar.png'; // Default image
         if(req.file) {
-            // For now, we'll use a placeholder since Vercel doesn't support file uploads to disk
-            // In production, you'd upload to cloud storage (Cloudinary, AWS S3, etc.)
-            imagePath = '/uploads/user-avatar.png';
+            // Convert uploaded file to base64 for immediate display
+            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+            console.log('File uploaded:', req.file.originalname);
+            imagePath = base64Image;
+        } else {
+            console.log('No file uploaded, using default avatar');
         }
 
         const user = new User({
@@ -88,7 +107,15 @@ router.get("/edit/:id", isAuthenticated, async (req, res) => {
     }
 });
 
-router.post("/edit/:id", isAuthenticated, upload.single("image"), async (req, res) => {
+router.post("/edit/:id", isAuthenticated, (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+        if (err) {
+            console.error("File upload error:", err.message);
+            return res.status(400).json({ message: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         if(!req.body.name || !req.body.email){
             return res.status(400).json({ message: "Name and email are required" });
@@ -100,9 +127,12 @@ router.post("/edit/:id", isAuthenticated, upload.single("image"), async (req, re
         };
         
         if(req.file){
-            // For Vercel compatibility, use placeholder image
-            updateData.image = '/uploads/user-avatar.png';
+            // Convert uploaded file to base64 for immediate display
+            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+            console.log('New file uploaded for edit:', req.file.originalname);
+            updateData.image = base64Image;
         }
+        // If no new file uploaded, keep existing image (don't update image field)
         
         const user = await User.findByIdAndUpdate(req.params.id, updateData);
         if (!user) {
