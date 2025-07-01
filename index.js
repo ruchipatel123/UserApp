@@ -6,20 +6,16 @@ const app = express();
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
-
-
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = "mongodb+srv://ruchip:ruchip@cluster0.ovwrjkz.mongodb.net";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
-    deprecationErrors: true,
   },
 });
 
-//mongoose.connect("mongodb+srv://ruchip:Ruchi@456@cluster0.85467.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 
 
 
@@ -34,13 +30,11 @@ app.use(express.static(path.join(__dirname, "views")));
 app.use(cookieParser());
 app.use(cors(
     {
-        origin: ["http://localhost:3000","https://user-app-nine-beta.vercel.app/", "https://user-module-frontend.vercel.app"],
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
+        origin: ["http://localhost:3000","https://user-app-nine-beta.vercel.app/"],
+        methods: ["POST", "GET"],
+        credentials: true
     }
 ));
-
 
 const User = require("./models/user");
 
@@ -57,6 +51,8 @@ app.use("/", userRouter);
 const userLoginRouter = require("./Router/userLogin");
 app.use("/", userLoginRouter);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
+    await client.connect();
+    console.log("Connected to MongoDB");
 });
