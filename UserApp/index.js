@@ -38,6 +38,21 @@ app.use(cors(
     }
 ));
 
+// Middleware to ensure MongoDB connection in production
+app.use(async (req, res, next) => {
+    if (process.env.NODE_ENV === 'production') {
+        try {
+            await connectToMongoDB();
+        } catch (error) {
+            console.error("Failed to connect to MongoDB:", error);
+            return res.status(503).json({ 
+                message: "Database connection failed. Please try again later." 
+            });
+        }
+    }
+    next();
+});
+
 const User = require("./models/user");
 
 const PORT = process.env.PORT || 3001;
@@ -53,29 +68,44 @@ app.use("/", userRouter);
 const userLoginRouter = require("./Router/userLogin");
 app.use("/", userLoginRouter);
 
-// Connect to MongoDB using Mongoose with timeout options
-mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 30000, // Keep trying to send operations for 30 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    minPoolSize: 5, // Maintain a minimum of 5 socket connections
-    maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-})
-.then(() => {
-    console.log("Connected to MongoDB successfully at port " + PORT);
-    // Test the connection with a simple operation
-    mongoose.connection.db.admin().ping()
-        .then(() => console.log("MongoDB ping successful"))
-        .catch(err => console.error("MongoDB ping failed:", err));
-})
-.catch((error) => {
-    console.error("MongoDB connection error:", error);
-    console.error("Please check:");
-    console.error("1. Your internet connection");
-    console.error("2. MongoDB Atlas IP whitelist settings");
-    console.error("3. Database credentials in .env file");
-    process.exit(1); // Exit the process if MongoDB connection fails
-});
+// Connect to MongoDB using Mongoose with serverless-optimized options
+const connectToMongoDB = async () => {
+    if (mongoose.connection.readyState === 0) {
+        try {
+            await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 10000, // Shorter timeout for serverless
+                socketTimeoutMS: 20000, // Shorter socket timeout for serverless
+                maxPoolSize: 1, // Smaller pool for serverless
+                minPoolSize: 0, // No minimum connections for serverless
+                maxIdleTimeMS: 10000, // Shorter idle time for serverless
+            });
+            console.log("Connected to MongoDB successfully");
+        } catch (error) {
+            console.error("MongoDB connection error:", error);
+            throw error;
+        }
+    }
+};
+
+// Initialize connection for local development
+if (process.env.NODE_ENV !== 'production') {
+    connectToMongoDB()
+        .then(() => {
+            console.log("Connected to MongoDB successfully at port " + PORT);
+            // Test the connection with a simple operation
+            mongoose.connection.db.admin().ping()
+                .then(() => console.log("MongoDB ping successful"))
+                .catch(err => console.error("MongoDB ping failed:", err));
+        })
+        .catch((error) => {
+            console.error("MongoDB connection error:", error);
+            console.error("Please check:");
+            console.error("1. Your internet connection");
+            console.error("2. MongoDB Atlas IP whitelist settings");
+            console.error("3. Database credentials in .env file");
+            process.exit(1); // Exit the process if MongoDB connection fails
+        });
+}
 
 // Handle MongoDB connection errors after initial connection
 mongoose.connection.on('error', (error) => {
