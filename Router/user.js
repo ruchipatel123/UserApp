@@ -102,6 +102,45 @@ router.get("/create", isAuthenticated, (req, res) => {
     res.render("create");
 });
 
+// Search API endpoint for real-time search
+router.get("/api/search", isAuthenticated, async (req, res) => {
+    try {
+        const searchQuery = req.query.q || '';
+        console.log("Search query:", searchQuery, "from user:", req.user.email);
+        
+        let users = [];
+        
+        if (searchQuery.trim() === '') {
+            // If no search query, return all users
+            users = await User.find({createdBy: req.user.email}).sort({name: 1});
+        } else {
+            // Search by name or email (case-insensitive)
+            users = await User.find({
+                createdBy: req.user.email,
+                $or: [
+                    { name: { $regex: searchQuery, $options: 'i' } },
+                    { email: { $regex: searchQuery, $options: 'i' } }
+                ]
+            }).sort({name: 1});
+        }
+        
+        console.log("Found users:", users.length);
+        res.json({
+            success: true,
+            users: users,
+            count: users.length
+        });
+    } catch (error) {
+        console.error("Search error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error performing search",
+            users: [],
+            count: 0
+        });
+    }
+});
+
 router.get("/", isAuthenticated, async(req,res)=>{
     try {
         console.log("Current user:", req.user.email);
