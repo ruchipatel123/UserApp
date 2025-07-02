@@ -50,13 +50,22 @@ app.use("/", userRouter);
 const userLoginRouter = require("./Router/userLogin");
 app.use("/", userLoginRouter);
 
-// Connect to MongoDB using Mongoose
-mongoose.connect(uri)
+// Connect to MongoDB using Mongoose with timeout options
+mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 30000, // Keep trying to send operations for 30 seconds
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    minPoolSize: 5, // Maintain a minimum of 5 socket connections
+    maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+    bufferMaxEntries: 0, // Disable mongoose buffering
+    bufferCommands: false, // Disable mongoose buffering
+})
 .then(() => {
     console.log("Connected to MongoDB successfully at port " + PORT);
 })
 .catch((error) => {
     console.error("MongoDB connection error:", error);
+    process.exit(1); // Exit the process if MongoDB connection fails
 });
 
 // For local development
