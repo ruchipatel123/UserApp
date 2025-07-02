@@ -60,7 +60,7 @@ mongoose.connect(uri, {
     console.log("Connected to MongoDB successfully");
 })
 .catch((error) => {
-    console.error("MongoDB connection error:", error);
+    console.error("MongoDB connection error below:", error);
 });
 
 // For local development
