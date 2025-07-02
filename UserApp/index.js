@@ -13,7 +13,24 @@ mongoose.set('bufferCommands', false);
 // MongoDB connection string - use environment variable or fallback
 const uri = process.env.MONGODB_URI || "mongodb+srv://ruchip:ruchip@cluster0.ue1bwh4.mongodb.net/userapp?retryWrites=true&w=majority&appName=Cluster0";
 
-
+// Connect to MongoDB using Mongoose with serverless-optimized options
+const connectToMongoDB = async () => {
+    if (mongoose.connection.readyState === 0) {
+        try {
+            await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 10000, // Shorter timeout for serverless
+                socketTimeoutMS: 20000, // Shorter socket timeout for serverless
+                maxPoolSize: 1, // Smaller pool for serverless
+                minPoolSize: 0, // No minimum connections for serverless
+                maxIdleTimeMS: 10000, // Shorter idle time for serverless
+            });
+            console.log("Connected to MongoDB successfully");
+        } catch (error) {
+            console.error("MongoDB connection error:", error);
+            throw error;
+        }
+    }
+};
 
 // Import authentication middleware
 const { isAuthenticated, redirectIfAuthenticated } = require("./middleware/auth");
@@ -40,15 +57,13 @@ app.use(cors(
 
 // Middleware to ensure MongoDB connection in production
 app.use(async (req, res, next) => {
-    if (process.env.NODE_ENV === 'production') {
-        try {
-            await connectToMongoDB();
-        } catch (error) {
-            console.error("Failed to connect to MongoDB:", error);
-            return res.status(503).json({ 
-                message: "Database connection failed. Please try again later." 
-            });
-        }
+    try {
+        await connectToMongoDB();
+    } catch (error) {
+        console.error("Failed to connect to MongoDB:", error);
+        return res.status(503).json({ 
+            message: "Database connection failed. Please try again later." 
+        });
     }
     next();
 });
@@ -57,6 +72,15 @@ const User = require("./models/user");
 
 const PORT = process.env.PORT || 3001;
 
+// Health check endpoint for Vercel
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ 
+        status: "OK", 
+        message: "Server is running",
+        timestamp: new Date().toISOString(),
+        mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+    });
+});
 
 app.get("/create", isAuthenticated, (req, res) => {
     res.render("create");
@@ -68,24 +92,19 @@ app.use("/", userRouter);
 const userLoginRouter = require("./Router/userLogin");
 app.use("/", userLoginRouter);
 
-// Connect to MongoDB using Mongoose with serverless-optimized options
-const connectToMongoDB = async () => {
-    if (mongoose.connection.readyState === 0) {
-        try {
-            await mongoose.connect(uri, {
-                serverSelectionTimeoutMS: 10000, // Shorter timeout for serverless
-                socketTimeoutMS: 20000, // Shorter socket timeout for serverless
-                maxPoolSize: 1, // Smaller pool for serverless
-                minPoolSize: 0, // No minimum connections for serverless
-                maxIdleTimeMS: 10000, // Shorter idle time for serverless
-            });
-            console.log("Connected to MongoDB successfully");
-        } catch (error) {
-            console.error("MongoDB connection error:", error);
-            throw error;
-        }
-    }
-};
+// Global error handler
+app.use((error, req, res, next) => {
+    console.error("Global error handler:", error);
+    res.status(500).json({ 
+        message: "Internal server error",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ message: "Route not found" });
+});
 
 // Initialize connection for local development
 if (process.env.NODE_ENV !== 'production') {
