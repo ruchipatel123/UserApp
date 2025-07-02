@@ -15,43 +15,69 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024 // 5MB limit
     },
     fileFilter: (req, file, cb) => {
+        console.log('File being uploaded:', file.originalname, 'Type:', file.mimetype);
         // Check if file is an image
         if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (allowedTypes.includes(file.mimetype)) {
+                cb(null, true);
+            } else {
+                cb(new Error('Only JPEG, PNG, GIF, and WebP images are allowed!'), false);
+            }
         } else {
             cb(new Error('Only image files are allowed!'), false);
         }
     }
 });
 
+// Middleware to handle multer errors
+const handleMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        console.error('Multer error:', err.message);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.redirect("/create?error=file-too-large");
+        }
+        return res.redirect("/create?error=upload-error");
+    } else if (err) {
+        console.error('File upload error:', err.message);
+        return res.redirect("/create?error=invalid-file");
+    }
+    next();
+};
+
 router.post("/create", isAuthenticated, (req, res, next) => {
     upload.single("image")(req, res, (err) => {
-        if (err) {
-            console.error("File upload error:", err.message);
-            return res.status(400).json({ message: err.message });
-        }
-        next();
+        handleMulterError(err, req, res, next);
     });
 }, async (req, res) => {
     try {
-        console.log(req.cookies.email);
+        console.log("Create user request received from:", req.user.email);
+        console.log("Body:", req.body);
+        console.log("File:", req.file);
 
         if(!req.body.name || !req.body.email){
-            return res.status(400).json({ message: "Name and email are required" });
+            console.log("Missing required fields");
+            return res.redirect("/create?error=missing-fields");
         }
 
         const existingUser = await User.findOne({ email: req.body.email });
         if(existingUser){
-            return res.status(400).json({ message: "User already exists" });
+            console.log("User already exists");
+            return res.redirect("/create?error=user-exists");
         }
 
         // Handle image upload - use default avatar if no image uploaded
         let imagePath = '/uploads/default-avatar.png'; // Default image
         if(req.file) {
-            // Convert uploaded file to base64 for immediate display
-            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-            console.log('File uploaded:', req.file.originalname);
-            imagePath = base64Image;
+            try {
+                // Convert uploaded file to base64 for immediate display
+                const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+                console.log('File uploaded successfully:', req.file.originalname);
+                imagePath = base64Image;
+            } catch (fileError) {
+                console.error('Error processing file:', fileError);
+                // Continue with default image if file processing fails
+            }
         } else {
             console.log('No file uploaded, using default avatar');
         }
@@ -60,23 +86,28 @@ router.post("/create", isAuthenticated, (req, res, next) => {
             name: req.body.name,
             email: req.body.email,
             image: imagePath,
-            createdBy: req.cookies.email
+            createdBy: req.user.email
         });
         
         await user.save();
-        res.redirect("/");
+        console.log('User created successfully');
+        res.redirect("/?success=user-created");
     } catch (error) {
         console.error("Error creating user:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.redirect("/create?error=server-error");
     }
 });  
 
+router.get("/create", isAuthenticated, (req, res) => {
+    res.render("create");
+});
+
 router.get("/", isAuthenticated, async(req,res)=>{
     try {
-        console.log(req.cookies.email);
+        console.log("Current user:", req.user.email);
 
-        const users = await User.find({createdBy: req.cookies.email});
-        console.log(users);
+        const users = await User.find({createdBy: req.user.email});
+        console.log("Found users:", users.length);
         res.render("home", { users });
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -107,18 +138,34 @@ router.get("/edit/:id", isAuthenticated, async (req, res) => {
     }
 });
 
+// Middleware to handle multer errors for edit
+const handleEditMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        console.error('Multer error during edit:', err.message);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.redirect(`/edit/${req.params.id}?error=file-too-large`);
+        }
+        return res.redirect(`/edit/${req.params.id}?error=upload-error`);
+    } else if (err) {
+        console.error('File upload error during edit:', err.message);
+        return res.redirect(`/edit/${req.params.id}?error=invalid-file`);
+    }
+    next();
+};
+
 router.post("/edit/:id", isAuthenticated, (req, res, next) => {
     upload.single("image")(req, res, (err) => {
-        if (err) {
-            console.error("File upload error:", err.message);
-            return res.status(400).json({ message: err.message });
-        }
-        next();
+        handleEditMulterError(err, req, res, next);
     });
 }, async (req, res) => {
     try {
+        console.log("Edit user request received for ID:", req.params.id);
+        console.log("Body:", req.body);
+        console.log("File:", req.file);
+
         if(!req.body.name || !req.body.email){
-            return res.status(400).json({ message: "Name and email are required" });
+            console.log("Missing required fields");
+            return res.redirect(`/edit/${req.params.id}?error=missing-fields`);
         }
         
         const updateData = {
@@ -127,22 +174,31 @@ router.post("/edit/:id", isAuthenticated, (req, res, next) => {
         };
         
         if(req.file){
-            // Convert uploaded file to base64 for immediate display
-            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-            console.log('New file uploaded for edit:', req.file.originalname);
-            updateData.image = base64Image;
+            try {
+                // Convert uploaded file to base64 for immediate display
+                const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+                console.log('New file uploaded for edit:', req.file.originalname);
+                updateData.image = base64Image;
+            } catch (fileError) {
+                console.error('Error processing file during edit:', fileError);
+                // Continue without updating image if file processing fails
+            }
+        } else {
+            console.log('No new file uploaded, keeping existing image');
         }
         // If no new file uploaded, keep existing image (don't update image field)
         
-        const user = await User.findByIdAndUpdate(req.params.id, updateData);
+        const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            console.log("User not found for ID:", req.params.id);
+            return res.redirect("/?error=user-not-found");
         }
         
-        res.redirect("/");
+        console.log('User updated successfully');
+        res.redirect("/?success=user-updated");
     } catch (error) {
         console.error("Error updating user:", error);
-        res.status(500).json({ message: "Internal server error during update" });
+        res.redirect(`/edit/${req.params.id}?error=server-error`);
     }
 });
 

@@ -3,52 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Create User - User Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
-<body>
-    <body class="flex flex-col  h-screen">
-      <!-- component -->
-    <div class="my-5">
-        <!-- Main container for the form, responsive to screen sizes -->
-        <div class="container mx-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl shadow-md dark:shadow-white py-4 px-6 sm:px-10 bg-white dark:bg-gray-800 border-emerald-500 rounded-md">  
-            <!-- Back button -->
-            <a href="/logout" class="bg-red-500 text-white py-2 px-4 rounded-full font-semibold hover:bg-red-600 transition-colors duration-200 mb-2 inline-block">Logout</a>
-            
-            <a href="/" class="px-4 py-2 bg-red-500 rounded-md text-white text-sm sm:text-lg shadow-md">Go Back</a>
-            
-            <div class="my-3">
-                <!-- Form title -->
-                <h1 class="text-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Create User</h1>
-                <form action="/create" method="POST" enctype="multipart/form-data">
-                
-                    <!-- Input field for 'Name' -->
-                    <div class="my-2">
-                        <label for="name" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Name</label>
-                        <input type="text" name="name" placeholder="Name" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="name">
+<body class="min-h-screen gradient-bg">
+    <!-- Background decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-4 -right-4 w-72 h-72 bg-white opacity-5 rounded-full blur-3xl float-animation"></div>
+        <div class="absolute top-1/2 -left-8 w-96 h-96 bg-purple-300 opacity-5 rounded-full blur-3xl float-animation" style="animation-delay: -2s;"></div>
+        <div class="absolute bottom-8 right-1/3 w-80 h-80 bg-blue-200 opacity-5 rounded-full blur-3xl float-animation" style="animation-delay: -4s;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 p-6">
+        <div class="max-w-2xl mx-auto">
+            <div class="glass-effect rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Create New User</h1>
+                            <p class="text-gray-600">Add a new user to the system</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <a href="/" class="bg-gray-500 text-white py-2 px-4 rounded-full font-medium hover:bg-gray-600 transition-colors duration-200 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            <span>Back</span>
+                        </a>
+                        <a href="/logout" class="bg-red-500 text-white py-2 px-4 rounded-full font-medium hover:bg-red-600 transition-colors duration-200 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Form -->
+    <main class="relative z-10 p-6 pt-0">
+        <div class="max-w-2xl mx-auto slide-in">
+            <div class="glass-effect rounded-2xl shadow-lg p-8">
+                <form action="/create" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    <!-- Name Field -->
+                    <div class="relative">
+                        <label class="block text-gray-800 text-sm font-semibold mb-3" for="name">
+                            Full Name
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                type="text" 
+                                name="name" 
+                                id="name"
+                                placeholder="Enter full name" 
+                                required
+                                class="input-focus w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                        </div>
                     </div>
 
-                    <!-- Input field for 'First Name' -->
-                    <div class="my-2">
-                        <label for="first_name" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Email</label>
-                        <input type="email" name="email" placeholder="Email" class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" id="first_name">
+                    <!-- Email Field -->
+                    <div class="relative">
+                        <label class="block text-gray-800 text-sm font-semibold mb-3" for="email">
+                            Email Address
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                                </svg>
+                            </div>
+                            <input 
+                                type="email" 
+                                name="email" 
+                                id="email"
+                                placeholder="Enter email address" 
+                                required
+                                class="input-focus w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                        </div>
                     </div>
 
-                    <!-- Input field for 'Image' -->
-                    <div class="my-2">
-                        <label for="image" class="text-sm sm:text-md font-bold text-gray-700 dark:text-gray-300">Profile Image (Optional)</label>
-                        <input type="file" name="image" accept="image/*" 
-                               class="block w-full border border-emerald-500 outline-emerald-800 px-2 py-2 text-sm sm:text-md rounded-md my-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                               id="image">
-                        <small class="text-gray-500">Leave empty for default avatar</small>
+                    <!-- Profile Image Field -->
+                    <div class="relative">
+                        <label class="block text-gray-800 text-sm font-semibold mb-3" for="image">
+                            Profile Image (Optional)
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="file" 
+                                name="image" 
+                                accept="image/*" 
+                                id="image"
+                                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                            >
+                            <p class="mt-2 text-sm text-gray-500">Leave empty to use default avatar</p>
+                        </div>
                     </div>
 
-                    <!-- Save button -->
-                    <button class="px-4 py-1 bg-emerald-500 rounded-md text-black text-sm sm:text-lg shadow-md">Save</button>
+                    <!-- Submit Button -->
+                    <div class="flex items-center justify-end space-x-4 pt-6">
+                        <a href="/" class="bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200">
+                            Cancel
+                        </a>
+                        <button 
+                            type="submit" 
+                            class="btn-primary text-white py-3 px-8 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Create User</span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
-    </div>
-    </form>
+    </main>
+
+    <!-- File Upload Preview Script -->
+    
 </body>
 </html>

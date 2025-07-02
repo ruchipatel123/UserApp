@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
+const AppUser = require("../models/appuser");
 
 // Middleware to check if user is authenticated
-const isAuthenticated = (req, res, next) => {
+const isAuthenticated = async (req, res, next) => {
     const token = req.cookies.token;
     
     if (!token) {
@@ -10,11 +11,25 @@ const isAuthenticated = (req, res, next) => {
     
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'Ruchi@123');
-        req.user = decoded;
+        
+        // Fetch full user data from database
+        const user = await AppUser.findById(decoded.id);
+        if (!user) {
+            res.clearCookie("token");
+            res.clearCookie("email");
+            return res.redirect("/login");
+        }
+        
+        req.user = {
+            id: user._id,
+            email: user.email,
+            name: user.name
+        };
         next();
     } catch (error) {
         // Invalid token, clear it and redirect to login
         res.clearCookie("token");
+        res.clearCookie("email");
         return res.redirect("/login");
     }
 };
