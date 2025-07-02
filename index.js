@@ -54,6 +54,7 @@ app.use("/", userLoginRouter);
 // Connect to MongoDB using Mongoose
 mongoose.connect(uri, {
     useNewUrlParser: true,
+    serverSelectionTimeoutMS: 20000,
     useUnifiedTopology: true,
 })
 .then(() => {
