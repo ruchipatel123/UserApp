@@ -62,10 +62,31 @@ mongoose.connect(uri, {
 })
 .then(() => {
     console.log("Connected to MongoDB successfully at port " + PORT);
+    // Test the connection with a simple operation
+    mongoose.connection.db.admin().ping()
+        .then(() => console.log("MongoDB ping successful"))
+        .catch(err => console.error("MongoDB ping failed:", err));
 })
 .catch((error) => {
     console.error("MongoDB connection error:", error);
+    console.error("Please check:");
+    console.error("1. Your internet connection");
+    console.error("2. MongoDB Atlas IP whitelist settings");
+    console.error("3. Database credentials in .env file");
     process.exit(1); // Exit the process if MongoDB connection fails
+});
+
+// Handle MongoDB connection errors after initial connection
+mongoose.connection.on('error', (error) => {
+    console.error('MongoDB connection error:', error);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+    console.log('MongoDB reconnected');
 });
 
 // For local development
