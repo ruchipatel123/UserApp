@@ -7,6 +7,9 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
+// Disable mongoose buffering to prevent timeout issues
+mongoose.set('bufferCommands', false);
+
 // MongoDB connection string - use environment variable or fallback
 const uri = process.env.MONGODB_URI || "mongodb+srv://ruchip:ruchip@cluster0.ue1bwh4.mongodb.net/userapp?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -57,8 +60,6 @@ mongoose.connect(uri, {
     maxPoolSize: 10, // Maintain up to 10 socket connections
     minPoolSize: 5, // Maintain a minimum of 5 socket connections
     maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-    bufferMaxEntries: 0, // Disable mongoose buffering
-    bufferCommands: false, // Disable mongoose buffering
 })
 .then(() => {
     console.log("Connected to MongoDB successfully at port " + PORT);
